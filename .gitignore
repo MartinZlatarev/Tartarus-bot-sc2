@@ -26,8 +26,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-ares-sc2/
-sc2/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
