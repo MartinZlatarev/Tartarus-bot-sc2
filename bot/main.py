@@ -16,10 +16,7 @@ from sc2.position import Point2, Point3
 from sc2.unit import Unit
 from sc2.units import Units
 from sc2 import pixel_map
-from ares.behaviors.macro import Mining, GasBuildingController
-from ares.behaviors.macro import MacroPlan
-from ares.behaviors.macro import SpawnController, ProductionController, AutoSupply
-from ares.consts import UnitRole
+from ares.behaviors.macro import Mining
 
 # pylint: disable=W0231
 class ZergRushBot:
