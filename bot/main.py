@@ -114,7 +114,7 @@ class ZergRushBot:
         elif self.randoming:
             for zergling in bot.units(UnitTypeId.ZERGLING):
                 if not zergling.is_active:
-                    rPos: Point2 = bot.expansion_locations_list[random.randrange(0, len(bot.expansion_locations_list))]
+                    rPos: Point2 = bot.expansion_locations_list[random.randrange(0, len(bot.expansion_locations_list)-1)]
                     zergling.attack(rPos)
             for mutalisk in bot.units(UnitTypeId.MUTALISK):
                 if not mutalisk.is_active:
