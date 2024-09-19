@@ -85,7 +85,7 @@ class ZergRushBot:
                 bot.do(hatch(AbilityId.UPGRADETOLAIR_LAIR))
             if bot.structures(UnitTypeId.LAIR).ready.exists and not bot.structures(UnitTypeId.SPIRE).exists and bot.can_afford(UnitTypeId.SPIRE) and bot.already_pending(UnitTypeId.SPIRE) == 0:
                 for d in range(5, 15):
-                    loc: Point2 = hatch.position.towards(bot.game_info.map_center, d).offset(3, 0)
+                    loc: Point2 = hatch.position.towards(bot.game_info.map_center, d).offset((3, 0))
                     if await bot.can_place_single(UnitTypeId.SPIRE, loc):
                         if worker := bot.mediator.select_worker(target_position=loc):
                             bot.mediator.build_with_specific_worker(
