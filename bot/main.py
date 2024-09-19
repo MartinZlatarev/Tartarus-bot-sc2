@@ -30,6 +30,7 @@ class ZergRushBot:
         self.fighting = False
         self.makingZerglings = True
         self.target: Point2 = (0.0, 0.0)
+        self.extractorMade = False
         self.wave_length: dict = {
             "c033a97a-667d-42e3-91e8-13528ac191ed" : 40
         }
@@ -201,15 +202,14 @@ class ZergRushBot:
                             break
 
         # If we have no extractor, build extractor
-        elif (
-            bot.gas_buildings.amount + bot.already_pending(UnitTypeId.EXTRACTOR) == 0
-            and bot.can_afford(UnitTypeId.EXTRACTOR) and bot.workers
-        ):
+        elif (not self.extractorMade and bot.can_afford(UnitTypeId.EXTRACTOR) and bot.workers):
             loc: Point2 = bot.vespene_geyser.closest_to(hatch)
             if worker := bot.mediator.select_worker(target_position=loc):
                 bot.mediator.build_with_specific_worker(
                 worker=worker, structure_type=UnitTypeId.EXTRACTOR, pos=loc
             )   
+            self.extractorMade = True
+
 
         # If we have no queen, try to build a queen if we have a spawning pool compelted
         elif (
