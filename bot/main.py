@@ -17,6 +17,7 @@ from sc2.unit import Unit
 from sc2.units import Units
 from sc2 import pixel_map
 from ares.behaviors.macro import Mining
+from ares.consts import UnitRole
 
 # pylint: disable=W0231
 class ZergRushBot:
@@ -31,6 +32,7 @@ class ZergRushBot:
         self.makingZerglings = True
         self.target: Point2 = (0.0, 0.0)
         self.extractorMade = False
+        self.gas_drones = 0
         self.wave_length: dict = {
             "c033a97a-667d-42e3-91e8-13528ac191ed" : 40
         }
@@ -79,9 +81,7 @@ class ZergRushBot:
         if zerglings >= 100:
             self.makingZerglings = False
             if(bot.gas_buildings.ready):
-                extractor: Unit = bot.gas_buildings.first
-                if extractor.surplus_harvesters < 0:
-                    bot.workers.random.gather(extractor)
+                self.gas_drones = 3
             if bot.structures(UnitTypeId.LAIR).amount + bot.already_pending(UnitTypeId.LAIR) == 0 and bot.can_afford(UnitTypeId.LAIR) and hatch.is_idle:
                 bot.do(hatch(AbilityId.UPGRADETOLAIR_LAIR))
             if bot.structures(UnitTypeId.LAIR).ready.exists and not bot.structures(UnitTypeId.SPIRE).exists and bot.can_afford(UnitTypeId.SPIRE) and bot.already_pending(UnitTypeId.SPIRE) == 0:
@@ -119,8 +119,13 @@ class ZergRushBot:
                     zergling.attack(rPos)
             for mutalisk in bot.units(UnitTypeId.MUTALISK):
                 if not mutalisk.is_active:
-                    rPos: Point2 = (random.randrange(0, 255), random.randrange(0, 255))
-                    mutalisk.attack(rPos)
+                    map_width = bot.game_info.map_size[0]
+                    map_height = bot.game_info.map_size[1]
+                    
+                    random_x = random.uniform(0, map_width)
+                    random_y = random.uniform(0, map_height)
+                    random_position = Point2((random_x, random_y))
+                    mutalisk.attack(random_position)
             if enemy_structure_count > 0:
                 self.target = bot.enemy_structures[0].position
                 self.randoming = False
@@ -139,14 +144,18 @@ class ZergRushBot:
         
         # Pull workers out of gas if we have almost enough gas mined, this will stop mining when we reached 100 gas mined
         if self.makingZerglings:
-            if bot.vespene >= 88 or bot.already_pending_upgrade(UpgradeId.ZERGLINGMOVEMENTSPEED) > 0:
+            if bot.already_pending_upgrade(UpgradeId.ZERGLINGMOVEMENTSPEED) > 0:
+                self.gas_drones = 0
+                '''
                 gas_drones: Units = bot.workers.filter(lambda w: w.is_carrying_vespene and len(w.orders) < 2)
                 drone: Unit
                 for drone in gas_drones:
                     minerals: Units = bot.mineral_field.closer_than(10, hatch)
                     if minerals:
-                        mineral: Unit = minerals.closest_to(drone)
-                        drone.gather(mineral, queue=True)
+                        bot.mediator.assign_role(tag=drone.tag, role=UnitRole.CONTROL_GROUP_ONE)
+                        #mineral: Unit = minerals.closest_to(drone)
+                        #drone.gather(mineral, True)
+                '''
                         
         
         # If we have 100 vespene, this will try to research zergling speed once the spawning pool is at 100% completion
@@ -165,9 +174,12 @@ class ZergRushBot:
             bot.gas_buildings.ready and bot.vespene < 88
             and bot.already_pending_upgrade(UpgradeId.ZERGLINGMOVEMENTSPEED) == 0
         ):
+            self.gas_drones = 3
+            '''
             extractor: Unit = bot.gas_buildings.first
             if extractor.surplus_harvesters < 0:
                 bot.workers.random.gather(extractor)
+            '''
 
         # If we have lots of minerals, make a macro hatchery
         if bot.minerals > 500:
@@ -218,7 +230,7 @@ class ZergRushBot:
         ):
             if bot.can_afford(UnitTypeId.QUEEN):
                 bot.train(UnitTypeId.QUEEN)
-        bot.register_behavior(Mining())
+        bot.register_behavior(Mining(workers_per_gas=self.gas_drones))
 
     def draw_creep_pixelmap(bot):
         for (y, x), value in np.ndenumerate(bot.state.creep.data_numpy):
