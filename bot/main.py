@@ -102,12 +102,16 @@ class ZergRushBot:
         if bot.opponent_id in self.wave_length:
             if zerglings >= self.wave_length[bot.opponent_id]:
                 self.attacking = True
+            else:
+                self.attacking = False
         else:
             if zerglings >= 1:
                 self.attacking = True
+            else:
+                self.attacking = False
 
         if not self.randoming and self.attacking:
-            if minimumDist < 1 and enemy_structure_count > 0:
+            if minimumDist < 3 and enemy_structure_count > 0:
                 self.target = bot.enemy_structures[0].position
             for zergling in bot.units(UnitTypeId.ZERGLING):
                 zergling.attack(self.target)
@@ -115,7 +119,7 @@ class ZergRushBot:
                 mutalisk.attack(self.target)
         elif self.randoming:
             for zergling in bot.units(UnitTypeId.ZERGLING):
-                if not zergling.is_active:
+                if not zergling.is_active or zergling.distance_to(zergling.order_target) < 3:
                     rPos: Point2 = bot.expansion_locations_list[random.randrange(0, len(bot.expansion_locations_list)-1)]
                     zergling.attack(rPos)
             for mutalisk in bot.units(UnitTypeId.MUTALISK):
