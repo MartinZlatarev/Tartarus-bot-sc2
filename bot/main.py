@@ -64,6 +64,8 @@ class ZergRushBot:
             enemy_structure_count = enemy_structure_count+1
         for zergling in bot.units(UnitTypeId.ZERGLING):
             minimumDist = min(minimumDist, zergling.distance_to(self.target))
+        for mutalisk in bot.units(UnitTypeId.MUTALISK):
+            minimumDist = min(minimumDist, mutalisk.distance_to(self.target))
         if minimumDist < 10:
             self.fighting = True
         else:
