@@ -33,6 +33,7 @@ class ZergRushBot:
         self.target: Point2 = (0.0, 0.0)
         self.extractorMade = False
         self.gas_drones = 0
+        self.spineCrawlerCheeseDetected = False
         self.wave_length: dict = {
             "c033a97a-667d-42e3-91e8-13528ac191ed" : 40
         }
@@ -131,11 +132,6 @@ class ZergRushBot:
                 self.randoming = False
                 self.fighting = True
             
-        '''
-        for roach in bot.units(UnitTypeId.ROACH):
-            roach.attack(target)
-            attacking = True
-        '''
         # Inject hatchery if queen has more than 25 energy
         if self.makingZerglings:
             for queen in bot.units(UnitTypeId.QUEEN):
@@ -146,16 +142,6 @@ class ZergRushBot:
         if self.makingZerglings:
             if bot.already_pending_upgrade(UpgradeId.ZERGLINGMOVEMENTSPEED) > 0:
                 self.gas_drones = 0
-                '''
-                gas_drones: Units = bot.workers.filter(lambda w: w.is_carrying_vespene and len(w.orders) < 2)
-                drone: Unit
-                for drone in gas_drones:
-                    minerals: Units = bot.mineral_field.closer_than(10, hatch)
-                    if minerals:
-                        bot.mediator.assign_role(tag=drone.tag, role=UnitRole.CONTROL_GROUP_ONE)
-                        #mineral: Unit = minerals.closest_to(drone)
-                        #drone.gather(mineral, True)
-                '''
                         
         
         # If we have 100 vespene, this will try to research zergling speed once the spawning pool is at 100% completion
@@ -175,11 +161,6 @@ class ZergRushBot:
             and bot.already_pending_upgrade(UpgradeId.ZERGLINGMOVEMENTSPEED) == 0
         ):
             self.gas_drones = 3
-            '''
-            extractor: Unit = bot.gas_buildings.first
-            if extractor.surplus_harvesters < 0:
-                bot.workers.random.gather(extractor)
-            '''
 
         # If we have lots of minerals, make a macro hatchery
         if bot.minerals > 500:
@@ -230,6 +211,20 @@ class ZergRushBot:
         ):
             if bot.can_afford(UnitTypeId.QUEEN):
                 bot.train(UnitTypeId.QUEEN)
+        
+        spine_crawler_amount = 0
+        for spinecrawler in bot.enemy_structures(UnitTypeId.SPINECRAWLER):
+            if spinecrawler.distance_to(hatch) < 11:
+                self.spineCrawlerCheeseDetected = True
+                spine_crawler_amount = spine_crawler_amount+1
+                for drone in bot.workers:
+                    bot.mediator.assign_role(tag = drone.tag, role = UnitRole.DEFENDING)
+                    drone.attack(spinecrawler.position)
+        if spine_crawler_amount == 0 and self.spineCrawlerCheeseDetected:
+            self.spineCrawlerCheeseDetected = False
+            for drone in bot.workers:
+                bot.mediator.assign_role(tag = drone.tag, role = UnitRole.GATHERING)
+
         bot.register_behavior(Mining(workers_per_gas=self.gas_drones))
 
     def draw_creep_pixelmap(bot):
