@@ -29,7 +29,7 @@ def get_bot_description() -> str:
         bot_name = name
 
     return (
-        f"# {bot_name}\n\n" "Made with [ares-sc2](https://github.com/AresSC2/ares-sc2)"
+        f"# {bot_name}\n\n" "Simple zergling rush bot made with [ares-sc2](https://github.com/AresSC2/ares-sc2) \n Plans for the future include but not limited to: \n - Adding micro \n - Adding ML for the size of the wave"
     )
 
 def retrieve_value_from_config(string: str) -> Union[str, bool, None]:
