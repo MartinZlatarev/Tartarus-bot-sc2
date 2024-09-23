@@ -121,7 +121,10 @@ class ZergRushBot:
                 mutalisk.attack(self.target)
         elif self.randoming:
             for zergling in bot.units(UnitTypeId.ZERGLING):
-                if not zergling.is_active or zergling.distance_to(zergling.order_target) < 3:
+                currTarget = zergling.order_target
+                if isinstance(currTarget, int):
+                    currTarget = bot.find_by_tag(currTarget)
+                if zergling.is_idle or zergling.distance_to(currTarget) < 3:
                     rPos: Point2 = bot.expansion_locations_list[random.randrange(0, len(bot.expansion_locations_list)-1)]
                     zergling.attack(rPos)
             for mutalisk in bot.units(UnitTypeId.MUTALISK):
