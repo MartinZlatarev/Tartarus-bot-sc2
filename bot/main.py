@@ -35,7 +35,7 @@ class ZergRushBot:
         self.gas_drones = 0
         self.spineCrawlerCheeseDetected = False
         self.wave_length: dict = {
-            "c033a97a-667d-42e3-91e8-13528ac191ed" : 40
+            "c033a97a-667d-42e3-91e8-13528ac191ed" : 40,
             "28a2fada-a646-4ba7-80b2-9c3dee593512" : 20
         }
 
