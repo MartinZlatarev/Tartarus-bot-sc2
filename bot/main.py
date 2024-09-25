@@ -124,7 +124,9 @@ class ZergRushBot:
             for zergling in bot.units(UnitTypeId.ZERGLING):
                 currTarget = zergling.order_target
                 if isinstance(currTarget, int):
-                    currTarget = bot.find_by_tag(currTarget)
+                    for currUnit in bot.enemy_units:
+                        if currUnit.tag == currTarget:
+                            currTarget = currUnit
                 if zergling.is_idle or zergling.distance_to(currTarget) < 3:
                     rPos: Point2 = bot.expansion_locations_list[random.randrange(0, len(bot.expansion_locations_list)-1)]
                     zergling.attack(rPos)
