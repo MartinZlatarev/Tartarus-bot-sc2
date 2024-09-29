@@ -32,12 +32,13 @@ class ZergRushBot:
         self.makingZerglings = True
         self.target: Point2 = (0.0, 0.0)
         self.extractorMade = False
+        self.spireMade = False
         self.gas_drones = 0
         self.spineCrawlerCheeseDetected = False
         self.wave_length: dict = {
             "c033a97a-667d-42e3-91e8-13528ac191ed" : (40, True),
             "28a2fada-a646-4ba7-80b2-9c3dee593512" : (20, False),
-            "anyoneElse" : (1, True)
+            "anyoneElse" : (1, False)
         }
 
     # pylint: disable=R0912
@@ -62,7 +63,7 @@ class ZergRushBot:
         for zergling in bot.units(UnitTypeId.ZERGLING):
             zerglings = zerglings+1
         mutalisks: int = 0
-        for mutalisks in bot.units(UnitTypeId.MUTALISK):
+        for mutalisk in bot.units(UnitTypeId.MUTALISK):
             mutalisks = mutalisks+1
 
         key = None
@@ -105,7 +106,7 @@ class ZergRushBot:
                 self.gas_drones = 3
             if bot.structures(UnitTypeId.LAIR).amount + bot.already_pending(UnitTypeId.LAIR) == 0 and bot.can_afford(UnitTypeId.LAIR) and hatch.is_idle:
                 bot.do(hatch(AbilityId.UPGRADETOLAIR_LAIR))
-            if bot.structures(UnitTypeId.LAIR).ready.exists and not bot.structures(UnitTypeId.SPIRE).exists and bot.can_afford(UnitTypeId.SPIRE) and bot.already_pending(UnitTypeId.SPIRE) == 0:
+            if bot.structures(UnitTypeId.LAIR).ready.exists and not self.spireMade and bot.can_afford(UnitTypeId.SPIRE):
                 for d in range(5, 15):
                     loc: Point2 = hatch.position.towards(bot.game_info.map_center, d).offset((3, 0))
                     if await bot.can_place_single(UnitTypeId.SPIRE, loc):
@@ -113,6 +114,7 @@ class ZergRushBot:
                             bot.mediator.build_with_specific_worker(
                             worker=worker, structure_type=UnitTypeId.SPIRE, pos=loc
                             )
+                            self.spireMade = True
                             break
             if bot.structures(UnitTypeId.SPIRE).ready.exists and bot.can_afford(UnitTypeId.MUTALISK):
                 bot.train(UnitTypeId.MUTALISK)
@@ -223,7 +225,7 @@ class ZergRushBot:
 
         # If we have no queen, try to build a queen if we have a spawning pool compelted
         elif (
-            bot.units(UnitTypeId.QUEEN).amount + bot.already_pending(UnitTypeId.QUEEN) < bot.townhalls.amount
+            self.makingZerglings and bot.units(UnitTypeId.QUEEN).amount + bot.already_pending(UnitTypeId.QUEEN) < bot.townhalls.amount
             and bot.structures(UnitTypeId.SPAWNINGPOOL).ready
         ):
             if bot.can_afford(UnitTypeId.QUEEN):
