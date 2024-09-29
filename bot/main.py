@@ -38,7 +38,7 @@ class ZergRushBot:
         self.wave_length: dict = {
             "c033a97a-667d-42e3-91e8-13528ac191ed" : (40, True),
             "28a2fada-a646-4ba7-80b2-9c3dee593512" : (20, False),
-            "anyoneElse" : (1, False)
+            "anyoneElse" : (1, True)
         }
 
     # pylint: disable=R0912
