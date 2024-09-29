@@ -35,8 +35,9 @@ class ZergRushBot:
         self.gas_drones = 0
         self.spineCrawlerCheeseDetected = False
         self.wave_length: dict = {
-            "c033a97a-667d-42e3-91e8-13528ac191ed" : 40,
-            "28a2fada-a646-4ba7-80b2-9c3dee593512" : 20
+            "c033a97a-667d-42e3-91e8-13528ac191ed" : (40, True),
+            "28a2fada-a646-4ba7-80b2-9c3dee593512" : (20, False),
+            "anyoneElse" : (1, True)
         }
 
     # pylint: disable=R0912
@@ -56,6 +57,25 @@ class ZergRushBot:
             return
 
         hatch: Unit = bot.townhalls[0]
+
+        zerglings: int = 0
+        for zergling in bot.units(UnitTypeId.ZERGLING):
+            zerglings = zerglings+1
+        mutalisks: int = 0
+        for mutalisks in bot.units(UnitTypeId.MUTALISK):
+            mutalisks = mutalisks+1
+
+        key = None
+        if bot.opponent_id in self.wave_length:
+            key = bot.opponent_id
+        else:
+            key = "anyoneElse"
+        
+        if zerglings+mutalisks >= self.wave_length[key][0]:
+            self.attacking = True
+        else:
+            self.attacking = False
+        self.makingZerglings = self.wave_length[key][1]
 
         # Pick a target location
 
@@ -77,13 +97,10 @@ class ZergRushBot:
 
 
         # Give all zerglings an attack command
-
-        zerglings: int = 0
-        for zergling in bot.units(UnitTypeId.ZERGLING):
-            zerglings = zerglings+1
         
         if zerglings >= 100:
             self.makingZerglings = False
+        if self.makingZerglings == False:
             if(bot.gas_buildings.ready):
                 self.gas_drones = 3
             if bot.structures(UnitTypeId.LAIR).amount + bot.already_pending(UnitTypeId.LAIR) == 0 and bot.can_afford(UnitTypeId.LAIR) and hatch.is_idle:
@@ -99,19 +116,6 @@ class ZergRushBot:
                             break
             if bot.structures(UnitTypeId.SPIRE).ready.exists and bot.can_afford(UnitTypeId.MUTALISK):
                 bot.train(UnitTypeId.MUTALISK)
-        
-            
-
-        if bot.opponent_id in self.wave_length:
-            if zerglings >= self.wave_length[bot.opponent_id]:
-                self.attacking = True
-            else:
-                self.attacking = False
-        else:
-            if zerglings >= 1:
-                self.attacking = True
-            else:
-                self.attacking = False
 
         if not self.randoming and self.attacking:
             if minimumDist < 3 and enemy_structure_count > 0:
