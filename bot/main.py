@@ -33,6 +33,7 @@ class ZergRushBot:
         self.target: Point2 = (0.0, 0.0)
         self.extractorMade = False
         self.spireMade = False
+        self.secondBaseMade = False
         self.gas_drones = 0
         self.spineCrawlerCheeseDetected = False
         self.wave_length: dict = {
@@ -182,7 +183,7 @@ class ZergRushBot:
             self.gas_drones = 3
 
         # If we have lots of minerals, make a macro hatchery
-        if bot.minerals > 500:
+        if bot.minerals > 500 and self.secondBaseMade == False:
             for d in range(9, 15):
                 loc: Point2 = hatch.position.towards(bot.game_info.map_center, d)
                 if await bot.can_place_single(UnitTypeId.HATCHERY, loc):
@@ -190,6 +191,7 @@ class ZergRushBot:
                         bot.mediator.build_with_specific_worker(
                         worker=worker, structure_type=UnitTypeId.HATCHERY, pos=loc
                         )
+                        self.secondBaseMade = True
                         break
 
         # While we have less than 16 drones, make more drones
