@@ -23,8 +23,6 @@ from ares.consts import UnitRole
 class ZergRushBot:
 
     def __init__(self):
-        self.defender = 0
-        self.mineralMatch = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, -1, -1, -1, -1]
         self.currTarget = 0
         self.randoming = False
         self.attacking = False
@@ -183,7 +181,7 @@ class ZergRushBot:
             self.gas_drones = 3
 
         # If we have lots of minerals, make a macro hatchery
-        if bot.minerals > 500 and self.secondBaseMade == False:
+        if bot.minerals > 500 and self.secondBaseMade == False and self.makingZerglings == True:
             for d in range(9, 15):
                 loc: Point2 = hatch.position.towards(bot.game_info.map_center, d)
                 if await bot.can_place_single(UnitTypeId.HATCHERY, loc):
