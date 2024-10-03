@@ -30,13 +30,15 @@ class ZergRushBot:
         self.makingZerglings = True
         self.target: Point2 = (0.0, 0.0)
         self.extractorMade = False
+        self.secondExtractorMade = False
+        self.extractorsMade = 0
         self.spireMade = False
         self.secondBaseMade = False
         self.gas_drones = 0
         self.spineCrawlerCheeseDetected = False
         self.wave_length: dict = {
             "c033a97a-667d-42e3-91e8-13528ac191ed" : (40, True),
-            "28a2fada-a646-4ba7-80b2-9c3dee593512" : (20, False),
+            "28a2fada-a646-4ba7-80b2-9c3dee593512" : (10, False),
             "anyoneElse" : (1, True)
         }
 
@@ -57,6 +59,8 @@ class ZergRushBot:
             return
 
         hatch: Unit = bot.townhalls[0]
+        for extractor in bot.units(UnitTypeId.EXTRACTOR):
+            self.extractorsMade = self.extractorsMade+1
 
         zerglings: int = 0
         for zergling in bot.units(UnitTypeId.ZERGLING):
@@ -103,6 +107,12 @@ class ZergRushBot:
         if self.makingZerglings == False:
             if(bot.gas_buildings.ready):
                 self.gas_drones = 3
+            if not self.secondExtractorMade and self.extractorMade and bot.can_afford(UnitTypeId.EXTRACTOR) and bot.workers:
+                loc: Point2 = bot.vespene_geyser.closest_n_units(hatch, 2)[1]
+                if worker := bot.mediator.select_worker(target_position=loc):
+                    bot.mediator.build_with_specific_worker(
+                    worker=worker, structure_type=UnitTypeId.EXTRACTOR, pos=loc
+                )
             if bot.structures(UnitTypeId.LAIR).amount + bot.already_pending(UnitTypeId.LAIR) == 0 and bot.can_afford(UnitTypeId.LAIR) and hatch.is_idle:
                 bot.do(hatch(AbilityId.UPGRADETOLAIR_LAIR))
             if bot.structures(UnitTypeId.LAIR).ready.exists and not self.spireMade and bot.can_afford(UnitTypeId.SPIRE):
