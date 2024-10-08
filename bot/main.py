@@ -38,7 +38,7 @@ class ZergRushBot:
         self.spineCrawlerCheeseDetected = False
         self.wave_length: dict = {
             "c033a97a-667d-42e3-91e8-13528ac191ed" : (40, True),
-            "28a2fada-a646-4ba7-80b2-9c3dee593512" : (10, False),
+            "28a2fada-a646-4ba7-80b2-9c3dee593512" : (6, False),
             "4a491758-76ff-40de-996c-018d49b6237f" : (10, True),
             "anyoneElse" : (1, True)
         }
@@ -62,6 +62,13 @@ class ZergRushBot:
         hatch: Unit = bot.townhalls[0]
         for extractor in bot.units(UnitTypeId.EXTRACTOR):
             self.extractorsMade = self.extractorsMade+1
+        if self.extractorsMade == 0:
+            self.extractorMade = False
+            self.secondExtractorMade = False
+        if bot.structures(UnitTypeId.SPIRE).amount == 0:
+            self.spireMade = False
+        if bot.structures(UnitTypeId.HATCHERY).amount < 2:
+            self.secondBaseMade = False
 
         zerglings: int = 0
         for zergling in bot.units(UnitTypeId.ZERGLING):
