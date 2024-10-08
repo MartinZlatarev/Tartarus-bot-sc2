@@ -62,13 +62,6 @@ class ZergRushBot:
         hatch: Unit = bot.townhalls[0]
         for extractor in bot.units(UnitTypeId.EXTRACTOR):
             self.extractorsMade = self.extractorsMade+1
-        if self.extractorsMade == 0:
-            self.extractorMade = False
-            self.secondExtractorMade = False
-        if bot.structures(UnitTypeId.SPIRE).amount == 0:
-            self.spireMade = False
-        if bot.structures(UnitTypeId.HATCHERY).amount < 2:
-            self.secondBaseMade = False
 
         zerglings: int = 0
         for zergling in bot.units(UnitTypeId.ZERGLING):
@@ -182,7 +175,7 @@ class ZergRushBot:
         
         # If we have 100 vespene, this will try to research zergling speed once the spawning pool is at 100% completion
         if bot.already_pending_upgrade(UpgradeId.ZERGLINGMOVEMENTSPEED
-                                        ) == 0 and bot.can_afford(UpgradeId.ZERGLINGMOVEMENTSPEED):
+                                        ) == 0 and bot.can_afford(UpgradeId.ZERGLINGMOVEMENTSPEED) and self.makingZerglings:
             spawning_pools_ready: Units = bot.structures(UnitTypeId.SPAWNINGPOOL).ready
             if spawning_pools_ready:
                 bot.research(UpgradeId.ZERGLINGMOVEMENTSPEED)
