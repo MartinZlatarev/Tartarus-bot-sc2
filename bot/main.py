@@ -47,8 +47,6 @@ class ZergRushBot:
     async def on_step(self, bot, iteration):
         # Draw creep pixelmap for debugging
         # self.draw_creep_pixelmap()
-        if iteration == 2:
-            self.target = bot.enemy_start_locations[0].position
 
         #if iteration == 8000:
         #    bot.townhalls[0].upgrade(UP)
@@ -62,6 +60,13 @@ class ZergRushBot:
         hatch: Unit = bot.townhalls[0]
         for extractor in bot.units(UnitTypeId.EXTRACTOR):
             self.extractorsMade = self.extractorsMade+1
+
+        if iteration == 2:
+            enemy_main_ramp = min(
+            bot.game_info.map_ramps, 
+            key=lambda ramp: ramp.top_center.distance_to(Point2(bot.enemy_start_locations[0]))
+            )
+            self.target = enemy_main_ramp.top_center
 
         zerglings: int = 0
         for zergling in bot.units(UnitTypeId.ZERGLING):
@@ -97,8 +102,15 @@ class ZergRushBot:
         else:
             self.fighting = False
         if enemy_structure_count == 0 and self.fighting:
-            self.randoming = True
-            self.fighting = False
+            enemy_main_ramp = min(
+            bot.game_info.map_ramps, 
+            key=lambda ramp: ramp.top_center.distance_to(Point2(bot.enemy_start_locations[0]))
+            )
+            if self.target == enemy_main_ramp.top_center:
+                self.target = bot.enemy_start_locations[0]
+            else:
+                self.randoming = True
+                self.fighting = False
 
 
         # Give all zerglings an attack command
