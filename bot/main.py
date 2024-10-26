@@ -40,6 +40,7 @@ class ZergRushBot:
             "c033a97a-667d-42e3-91e8-13528ac191ed" : (40, True),
             "28a2fada-a646-4ba7-80b2-9c3dee593512" : (20, False),
             "4a491758-76ff-40de-996c-018d49b6237f" : (10, True),
+            "60337090-fa15-485d-9497-d9b1c28a86b5" : (10, False),
             "anyoneElse" : (1, True)
         }
 
