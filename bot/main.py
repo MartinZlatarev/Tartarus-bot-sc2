@@ -102,7 +102,7 @@ class ZergRushBot:
         if minDist2 > 1:
             self.savingUp = False
 
-        if bot.opponent_id == "60337090-fa15-485d-9497-d9b1c28a86b5" and not self.decoyBaseMade and mutalisks >= 10:
+        if bot.opponent_id == "60337090-fa15-485d-9497-d9b1c28a86b5" and not self.decoyBaseMade:
             if worker := bot.mediator.select_worker(target_position=loc):
                 bot.mediator.build_with_specific_worker(
                 worker=worker, structure_type=UnitTypeId.HATCHERY, pos=loc
