@@ -36,6 +36,9 @@ class ZergRushBot:
         self.secondBaseMade = False
         self.decoyBaseMade = False
         self.savingUp = False
+        self.hatch = None
+        self.firstGeyser = None
+        self.secondGeyser = None
         self.gas_drones = 0
         self.spineCrawlerCheeseDetected = False
         self.wave_length: dict = {
@@ -60,7 +63,12 @@ class ZergRushBot:
                 unit.attack(bot.enemy_start_locations[0])
             return
 
-        hatch: Unit = bot.townhalls[0]
+        if self.hatch == None:
+            self.hatch = bot.townhalls[0]
+            temp = bot.vespene_geyser.closest_n_units(self.hatch, 2)
+            self.firstGeyser = temp[0]
+            self.secondGeyser = temp[1]
+        
         for extractor in bot.units(UnitTypeId.EXTRACTOR):
             self.extractorsMade = self.extractorsMade+1
 
@@ -102,7 +110,7 @@ class ZergRushBot:
         if minDist2 > 1:
             self.savingUp = False
 
-        if bot.opponent_id == "60337090-fa15-485d-9497-d9b1c28a86b5" and not self.decoyBaseMade:
+        if bot.opponent_id == "60337090-fa15-485d-9497-d9b1c28a86b5" and not self.decoyBaseMade and self.spireMade:
             if worker := bot.mediator.select_worker(target_position=loc):
                 bot.mediator.build_with_specific_worker(
                 worker=worker, structure_type=UnitTypeId.HATCHERY, pos=loc
@@ -142,17 +150,18 @@ class ZergRushBot:
         if self.makingZerglings == False:
             if(bot.gas_buildings.ready):
                 self.gas_drones = 3
-            if not self.secondExtractorMade and self.extractorMade and bot.can_afford(UnitTypeId.EXTRACTOR) and bot.workers and not self.savingUp:
-                loc: Point2 = bot.vespene_geyser.closest_n_units(hatch, 2)[1]
+            if not self.secondExtractorMade and bot.already_pending(UnitTypeId.EXTRACTOR)+bot.structures(UnitTypeId.EXTRACTOR).amount == 1 and bot.can_afford(UnitTypeId.EXTRACTOR) and bot.workers and not self.savingUp:
+                loc: Point2 = self.secondGeyser
                 if worker := bot.mediator.select_worker(target_position=loc):
                     bot.mediator.build_with_specific_worker(
                     worker=worker, structure_type=UnitTypeId.EXTRACTOR, pos=loc
-                )
-            if bot.structures(UnitTypeId.LAIR).amount + bot.already_pending(UnitTypeId.LAIR) == 0 and bot.can_afford(UnitTypeId.LAIR) and hatch.is_idle:
-                bot.do(hatch(AbilityId.UPGRADETOLAIR_LAIR))
+                    )
+                    self.secondExtractorMade = True
+            if bot.structures(UnitTypeId.LAIR).amount + bot.already_pending(UnitTypeId.LAIR) == 0 and bot.can_afford(UnitTypeId.LAIR) and self.hatch.is_idle and not self.savingUp:
+                bot.do(self.hatch(AbilityId.UPGRADETOLAIR_LAIR))
             if bot.structures(UnitTypeId.LAIR).ready.exists and not self.spireMade and bot.can_afford(UnitTypeId.SPIRE) and not self.savingUp:
                 for d in range(5, 15):
-                    loc: Point2 = hatch.position.towards(bot.game_info.map_center, d).offset((3, 0))
+                    loc: Point2 = self.hatch.position.towards(bot.game_info.map_center, d).offset((3, 0))
                     if await bot.can_place_single(UnitTypeId.SPIRE, loc):
                         if worker := bot.mediator.select_worker(target_position=loc):
                             bot.mediator.build_with_specific_worker(
@@ -198,8 +207,8 @@ class ZergRushBot:
         # Inject hatchery if queen has more than 25 energy
         if self.makingZerglings:
             for queen in bot.units(UnitTypeId.QUEEN):
-                if queen.energy >= 25 and not hatch.has_buff(BuffId.QUEENSPAWNLARVATIMER):
-                    queen(AbilityId.EFFECT_INJECTLARVA, hatch)
+                if queen.energy >= 25 and not self.hatch.has_buff(BuffId.QUEENSPAWNLARVATIMER):
+                    queen(AbilityId.EFFECT_INJECTLARVA, self.hatch)
         
         # Pull workers out of gas if we have almost enough gas mined, this will stop mining when we reached 100 gas mined
         if self.makingZerglings:
@@ -228,7 +237,7 @@ class ZergRushBot:
         # If we have lots of minerals, make a macro hatchery
         if bot.minerals > 500 and self.secondBaseMade == False and self.makingZerglings == True and not self.savingUp:
             for d in range(9, 15):
-                loc: Point2 = hatch.position.towards(bot.game_info.map_center, d)
+                loc: Point2 = self.hatch.position.towards(bot.game_info.map_center, d)
                 if await bot.can_place_single(UnitTypeId.HATCHERY, loc):
                     if worker := bot.mediator.select_worker(target_position=loc):
                         bot.mediator.build_with_specific_worker(
@@ -250,7 +259,7 @@ class ZergRushBot:
         if bot.structures(UnitTypeId.SPAWNINGPOOL).amount + bot.already_pending(UnitTypeId.SPAWNINGPOOL) == 0 and not self.savingUp:
             if bot.can_afford(UnitTypeId.SPAWNINGPOOL):
                 for d in range(4, 15):
-                    loc: Point2 = hatch.position.towards(bot.game_info.map_center, d)
+                    loc: Point2 = self.hatch.position.towards(bot.game_info.map_center, d)
                     if await bot.can_place_single(UnitTypeId.SPAWNINGPOOL, loc):
                         if worker := bot.mediator.select_worker(target_position=loc):
                             bot.mediator.build_with_specific_worker(
@@ -260,12 +269,12 @@ class ZergRushBot:
 
         # If we have no extractor, build extractor
         elif (not self.extractorMade and bot.can_afford(UnitTypeId.EXTRACTOR) and bot.workers and not self.savingUp):
-            loc: Point2 = bot.vespene_geyser.closest_to(hatch)
+            loc: Point2 = self.firstGeyser
             if worker := bot.mediator.select_worker(target_position=loc):
                 bot.mediator.build_with_specific_worker(
                 worker=worker, structure_type=UnitTypeId.EXTRACTOR, pos=loc
-            )   
-            self.extractorMade = True
+                )   
+                self.extractorMade = True
 
 
         # If we have no queen, try to build a queen if we have a spawning pool compelted
@@ -278,7 +287,7 @@ class ZergRushBot:
         
         spine_crawler_amount = 0
         for spinecrawler in bot.enemy_structures(UnitTypeId.SPINECRAWLER):
-            if spinecrawler.distance_to(hatch) < 11:
+            if spinecrawler.distance_to(self.hatch) < 11:
                 self.spineCrawlerCheeseDetected = True
                 spine_crawler_amount = spine_crawler_amount+1
                 for drone in bot.workers:
