@@ -23,6 +23,7 @@ from ares.consts import UnitRole
 class ZergRushBot:
 
     def __init__(self):
+        self.secondBase = None
         self.currTarget = 0
         self.randoming = False
         self.attacking = False
@@ -73,7 +74,8 @@ class ZergRushBot:
             self.extractorsMade = self.extractorsMade+1
 
         if iteration == 2:
-            self.target = Point2(bot.enemy_start_locations[1])
+            self.secondBase = bot.mediator.get_enemy_nat
+            self.target = self.secondBase
 
         zerglings: int = 0
         for zergling in bot.units(UnitTypeId.ZERGLING):
@@ -132,7 +134,7 @@ class ZergRushBot:
             bot.game_info.map_ramps, 
             key=lambda ramp: ramp.top_center.distance_to(Point2(bot.enemy_start_locations[0]))
             )
-            if self.target == Point2(bot.enemy_start_locations[1]):
+            if self.target == self.secondBase:
                 self.target = enemy_main_ramp.top_center
             elif self.target == enemy_main_ramp.top_center:
                 self.target = bot.enemy_start_locations[0]

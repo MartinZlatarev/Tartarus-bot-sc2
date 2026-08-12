@@ -23,8 +23,8 @@ from ladder import run_ladder_game
 MAPS_PATH: str = "C:\\Program Files (x86)\\StarCraft II\\Maps"
 CONFIG_FILE: str = "config.yml"
 MAP_FILE_EXT: str = "SC2Map"
-MY_BOT_NAME: str = "MyBotName"
-MY_BOT_RACE: str = "MyBotRace"
+MY_BOT_NAME: str = "Tartarus"
+MY_BOT_RACE: str = "Zerg"
 
 
 def main():
