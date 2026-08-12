@@ -73,11 +73,7 @@ class ZergRushBot:
             self.extractorsMade = self.extractorsMade+1
 
         if iteration == 2:
-            enemy_main_ramp = min(
-            bot.game_info.map_ramps, 
-            key=lambda ramp: ramp.top_center.distance_to(Point2(bot.enemy_start_locations[0]))
-            )
-            self.target = enemy_main_ramp.top_center
+            self.target = Point2(bot.enemy_start_locations[1])
 
         zerglings: int = 0
         for zergling in bot.units(UnitTypeId.ZERGLING):
@@ -136,7 +132,9 @@ class ZergRushBot:
             bot.game_info.map_ramps, 
             key=lambda ramp: ramp.top_center.distance_to(Point2(bot.enemy_start_locations[0]))
             )
-            if self.target == enemy_main_ramp.top_center:
+            if self.target == Point2(bot.enemy_start_locations[1]):
+                self.target = enemy_main_ramp.top_center
+            elif self.target == enemy_main_ramp.top_center:
                 self.target = bot.enemy_start_locations[0]
             else:
                 self.randoming = True
