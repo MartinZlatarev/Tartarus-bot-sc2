@@ -151,7 +151,7 @@ class ZergRushBot:
         if not self.makingZerglings and not self.attacking and not self.randoming:
             main_ramp = min(
             bot.game_info.map_ramps, 
-            key=lambda ramp: ramp.top_center.distance_to(Point2(self.hatch))
+            key=lambda ramp: ramp.top_center.distance_to(Point2(self.hatch.position))
             )
             for mutalisk in bot.units(UnitTypeId.MUTALISK):
                 mutalisk.attack(main_ramp.top_center)
