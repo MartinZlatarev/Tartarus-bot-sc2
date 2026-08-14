@@ -38,6 +38,7 @@ class ZergRushBot:
         self.decoyBaseMade = False
         self.savingUp = False
         self.hatch = None
+        self.started = False
         self.firstGeyser = None
         self.secondGeyser = None
         self.gas_drones = 0
@@ -60,6 +61,10 @@ class ZergRushBot:
         #    bot.townhalls[0].upgrade(UP)
 
         # If townhall no longer exists: attack move with all units to enemy start location
+
+        if self.attacking:
+            self.started = True
+
         if not bot.townhalls:
             for unit in bot.units.exclude_type({UnitTypeId.EGG, UnitTypeId.LARVA}):
                 unit.attack(bot.enemy_start_locations[0])
@@ -99,6 +104,12 @@ class ZergRushBot:
 
         if bot.structures(UnitTypeId.SPIRE).amount + bot.already_pending(UnitTypeId.SPIRE) == 0:
             self.spireMade = False
+
+        if bot.already_pending(UnitTypeId.EXTRACTOR)+bot.structures(UnitTypeId.EXTRACTOR).amount < 2:
+            self.secondExtractorMade = False
+
+        if bot.already_pending(UnitTypeId.EXTRACTOR)+bot.structures(UnitTypeId.EXTRACTOR).amount < 1:
+            self.extractorMade = False
 
         loc = min(bot.expansion_locations_list, key=lambda exp: exp.distance_to_point2((0, 0)))
 
@@ -149,7 +160,7 @@ class ZergRushBot:
 
         # Give all zerglings an attack command
 
-        if not self.randoming and not self.attacking:
+        if not self.started:
             for zergling in bot.units(UnitTypeId.ZERGLING):
                 zergling.attack(self.hatch.position)
             for mutalisk in bot.units(UnitTypeId.MUTALISK):
