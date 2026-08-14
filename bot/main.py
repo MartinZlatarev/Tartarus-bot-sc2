@@ -96,6 +96,9 @@ class ZergRushBot:
             self.attacking = False
         self.makingZerglings = self.wave_length[key][1]
 
+        if bot.structures(UnitTypeId.SPIRE).amount + bot.already_pending(UnitTypeId.SPIRE) == 0:
+            self.spireMade = False
+
         loc = min(bot.expansion_locations_list, key=lambda exp: exp.distance_to_point2((0, 0)))
 
         minDist2 = 1000
@@ -144,6 +147,14 @@ class ZergRushBot:
 
 
         # Give all zerglings an attack command
+
+        if not self.makingZerglings and not self.attacking and not self.randoming:
+            main_ramp = min(
+            bot.game_info.map_ramps, 
+            key=lambda ramp: ramp.top_center.distance_to(Point2(self.hatch))
+            )
+            for mutalisk in bot.units(UnitTypeId.MUTALISK):
+                mutalisk.attack(main_ramp.top_center)
         
         if zerglings >= 100:
             self.makingZerglings = False
@@ -205,10 +216,9 @@ class ZergRushBot:
                 self.fighting = True
             
         # Inject hatchery if queen has more than 25 energy
-        if self.makingZerglings:
-            for queen in bot.units(UnitTypeId.QUEEN):
-                if queen.energy >= 25 and not self.hatch.has_buff(BuffId.QUEENSPAWNLARVATIMER):
-                    queen(AbilityId.EFFECT_INJECTLARVA, self.hatch)
+        for queen in bot.units(UnitTypeId.QUEEN):
+            if queen.energy >= 25 and not self.hatch.has_buff(BuffId.QUEENSPAWNLARVATIMER):
+                queen(AbilityId.EFFECT_INJECTLARVA, self.hatch)
         
         # Pull workers out of gas if we have almost enough gas mined, this will stop mining when we reached 100 gas mined
         if self.makingZerglings:
@@ -277,9 +287,9 @@ class ZergRushBot:
                 self.extractorMade = True
 
 
-        # If we have no queen, try to build a queen if we have a spawning pool compelted
+        # If we have no queen, try to build a queen if we have a spawning pool completed
         elif (
-            self.makingZerglings and bot.units(UnitTypeId.QUEEN).amount + bot.already_pending(UnitTypeId.QUEEN) < bot.townhalls.amount
+            bot.units(UnitTypeId.QUEEN).amount + bot.already_pending(UnitTypeId.QUEEN) < bot.townhalls.amount
             and bot.structures(UnitTypeId.SPAWNINGPOOL).ready
         ):
             if bot.can_afford(UnitTypeId.QUEEN) and not self.savingUp:
